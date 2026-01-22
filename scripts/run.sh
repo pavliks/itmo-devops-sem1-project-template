@@ -6,4 +6,4 @@ DB_NAME="project-sem-1"
 DB_USER="validator"
 DB_PASSWORD="val1dat0r"    
 
-go run main.go
+go run main.go &  

@@ -41,7 +41,7 @@ func main() {
 		log.Fatal("Error:", err)
 	}
 	defer db.Close()
-
+    log.Println("DB connected")
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v0/prices", handlePostPrices).Methods("POST")
 	router.HandleFunc("/api/v0/prices", handleGetPrices).Methods("GET")

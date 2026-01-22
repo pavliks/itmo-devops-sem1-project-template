@@ -7,16 +7,9 @@ DB_USER="validator"
 DB_PASSWORD="val1dat0r"    
 
 go run main.go &  
-sleep 1
+sleep 15
 
-netstat -tunlp
-
-for i in {1..30}; do                                                                                                                                                             
-      if curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/v0/prices | grep -q "200"; then                                                                          
-          break                                                                                                                                                                    
-      fi                                                                                                                                                                           
-    sleep 1                                                                                                                                                                      
- done     
+netstat -tunlp   
 
 # Цвета для вывода
 GREEN='\033[0;32m'

@@ -65,7 +65,7 @@ check_api_simple() {
     
     # Проверка POST /api/v0/prices
     echo "Тестирование POST /api/v0/prices"
-    curl -s -F "file=@$TEST_ZIP" "${API_HOST}/api/v0/prices"
+    curl -F "file=@$TEST_ZIP" "${API_HOST}/api/v0/prices"
     response=$(curl -s -F "file=@$TEST_ZIP" "${API_HOST}/api/v0/prices")
     if [[ $response == *"total_items"* && $response == *"total_categories"* && $response == *"total_price"* ]]; then
         echo -e "${GREEN}✓ POST запрос успешен${NC}"
@@ -84,7 +84,7 @@ check_api_simple() {
     # Создаем временную директорию и переходим в неё
     tmp_dir=$(mktemp -d)
     cd "$tmp_dir"
-    curl -s "${API_HOST}/api/v0/prices" -o "$RESPONSE_ZIP"
+    curl "${API_HOST}/api/v0/prices" -o "$RESPONSE_ZIP"
     if ! curl -s "${API_HOST}/api/v0/prices" -o "$RESPONSE_ZIP"; then
         cd "$current_dir"
         rm -rf "$tmp_dir"
@@ -137,43 +137,6 @@ check_postgres() {
             fi
             ;;
             
-        2)  
-            echo "Выполняем проверку уровня 2"
-            if PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "
-                SELECT 
-                    COUNT(*) as total_items,
-                    COUNT(DISTINCT category) as total_categories,
-                    SUM(price) as total_price
-                FROM prices;" 2>/dev/null; then
-                echo -e "${GREEN}✓ PostgreSQL работает корректно${NC}"
-                return 0
-            else
-                echo -e "${RED}✗ Ошибка выполнения запроса${NC}"
-                return 1
-            fi
-            ;;
-            
-        3)  
-            echo "Выполняем проверку уровня 3"
-            if PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "
-                WITH stats AS (
-                    SELECT 
-                        COUNT(*) as total_items,
-                        COUNT(DISTINCT category) as total_categories,
-                        SUM(price) as total_price,
-                        COUNT(*) - COUNT(DISTINCT (name, category, price)) as duplicates
-                    FROM prices
-                    WHERE create_date BETWEEN '2024-01-01' AND '2024-01-31'
-                    AND price BETWEEN 300 AND 1000
-                )
-                SELECT * FROM stats;" 2>/dev/null; then
-                echo -e "${GREEN}✓ PostgreSQL работает корректно${NC}"
-                return 0
-            else
-                echo -e "${RED}✗ Ошибка выполнения запроса${NC}"
-                return 1
-            fi
-            ;;
         *)
             echo "Неизвестный уровень: $level"
             return 1

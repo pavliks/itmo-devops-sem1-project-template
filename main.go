@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"strings"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -41,11 +42,12 @@ func main() {
 		log.Fatal("Error:", err)
 	}
 	defer db.Close()
-
+    log.Println("DB connected")
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v0/prices", handlePostPrices).Methods("POST")
 	router.HandleFunc("/api/v0/prices", handleGetPrices).Methods("GET")
 	port := ":8080"
+	log.Printf("HTTP server started on port %s", port)
 	if err := http.ListenAndServe(port, router); err != nil {
 		log.Fatal("Error", err)
 	}
@@ -195,7 +197,10 @@ func unzipFile(data []byte) ([]byte, error) {
 		return nil, err
 	}
 	for _, file := range zipReader.File {
-		if file.Name == "data.csv" {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+		if strings.HasSuffix(file.Name, "data.csv") {
 			rc, err := file.Open()
 			if err != nil {
 				return nil, err
@@ -206,7 +211,7 @@ func unzipFile(data []byte) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-
+			log.Printf("file data.csv found: %s", file.Name)
 			return csvData, nil
 		}
 	}

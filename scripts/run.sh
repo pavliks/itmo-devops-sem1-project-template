@@ -7,4 +7,8 @@ DB_USER="validator"
 DB_PASSWORD="val1dat0r"    
 
 go run main.go &  
-sleep 5
+sleep 15
+
+netstat -tunlp   
+
+

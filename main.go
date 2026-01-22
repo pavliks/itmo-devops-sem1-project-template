@@ -46,6 +46,7 @@ func main() {
 	router.HandleFunc("/api/v0/prices", handlePostPrices).Methods("POST")
 	router.HandleFunc("/api/v0/prices", handleGetPrices).Methods("GET")
 	port := ":8080"
+	log.Printf("HTTP server started on port %s", port)
 	if err := http.ListenAndServe(port, router); err != nil {
 		log.Fatal("Error", err)
 	}

@@ -211,7 +211,7 @@ func unzipFile(data []byte) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-
+			log.Printf("file data.csv found: %s", file.Name)
 			return csvData, nil
 		}
 	}

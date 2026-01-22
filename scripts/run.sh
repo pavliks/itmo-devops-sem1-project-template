@@ -7,7 +7,8 @@ DB_USER="validator"
 DB_PASSWORD="val1dat0r"    
 
 go run main.go &  
-sleep 10
+sleep 1
+netstat -tunlp
 
 
 # Цвета для вывода

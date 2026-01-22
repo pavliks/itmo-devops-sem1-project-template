@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"strings"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -196,7 +197,10 @@ func unzipFile(data []byte) ([]byte, error) {
 		return nil, err
 	}
 	for _, file := range zipReader.File {
-		if file.Name == "data.csv" {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+		if strings.HasSuffix(file.Name, "data.csv") {
 			rc, err := file.Open()
 			if err != nil {
 				return nil, err

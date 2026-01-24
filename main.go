@@ -39,7 +39,7 @@ func main() {
 	var err error
 	db, err = connectDB()
 	if err != nil {
-		log.Fatal("Error:", err)
+		log.Println("Error:", err)
 	}
 	defer db.Close()
     log.Println("DB connected")
@@ -49,7 +49,7 @@ func main() {
 	port := ":8080"
 	log.Printf("HTTP server started on port %s", port)
 	if err := http.ListenAndServe(port, router); err != nil {
-		log.Fatal("Error", err)
+		log.Println("Error", err)
 	}
 }
 

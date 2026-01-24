@@ -72,11 +72,6 @@ func connectDB() (*sql.DB, error) {
 }
 
 func insertPriceData(tx *sql.Tx, prices []Price) error {
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	
 	stmt, err := tx.Prepare("INSERT INTO prices (name, category, price, create_date) VALUES ($1, $2, $3, $4)")
 	if err != nil {
 		return err

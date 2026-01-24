@@ -6,7 +6,6 @@ DB_USER="validator"
 DB_PASSWORD="val1dat0r"    
 
 go mod download
-go mod tidy
 
 sleep 5
 
@@ -17,7 +16,7 @@ EOF
 
 PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME <<EOF
 CREATE TABLE prices (
-    id INTEGER NOT NULL,
+    id SERIAL NOT NULL,
     name VARCHAR(255) NOT NULL,
     category VARCHAR(255) NOT NULL,
     price NUMERIC(10, 2) NOT NULL,

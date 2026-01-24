@@ -39,7 +39,7 @@ func main() {
 	var err error
 	db, err = connectDB()
 	if err != nil {
-		log.Fatal("Error:", err)
+		log.Println("Error:", err)
 	}
 	defer db.Close()
     log.Println("DB connected")
@@ -49,7 +49,7 @@ func main() {
 	port := ":8080"
 	log.Printf("HTTP server started on port %s", port)
 	if err := http.ListenAndServe(port, router); err != nil {
-		log.Fatal("Error", err)
+		log.Println("Error", err)
 	}
 }
 
@@ -71,25 +71,20 @@ func connectDB() (*sql.DB, error) {
 	return database, nil
 }
 
-func insertPriceData(prices []Price) error {
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	stmt, err := tx.Prepare("INSERT INTO prices (id, name, category, price, create_date) VALUES ($1, $2, $3, $4, $5)")
+func insertPriceData(tx *sql.Tx, prices []Price) error {
+	stmt, err := tx.Prepare("INSERT INTO prices (name, category, price, create_date) VALUES ($1, $2, $3, $4)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 	for _, price := range prices {
-		_, err := stmt.Exec(price.ID, price.Name, price.Category, price.Price, price.CreateDate)
+		_, err := stmt.Exec(price.Name, price.Category, price.Price, price.CreateDate)
 		if err != nil {
 			return err
 		}
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func getAllPrices() ([]Price, error) {
@@ -111,10 +106,14 @@ func getAllPrices() ([]Price, error) {
 		prices = append(prices, price)
 	}
 
-	return prices, rows.Err()
+	if err := rows.Err(); err != nil {                                                                                                                                                              
+        return nil, err                                                                                                                                                                               
+    }                                                                                                                                                                                               
+	
+	return prices, nil  
 }
 
-func getStatistics() (*PostResponse, error) {
+func getStatistics(tx *sql.Tx) (*PostResponse, error) {
 	var response PostResponse
 
 	query := `
@@ -125,7 +124,7 @@ func getStatistics() (*PostResponse, error) {
 		FROM prices
 	`
 
-	err := db.QueryRow(query).Scan(&response.TotalItems, &response.TotalCategories, &response.TotalPrice)
+	err := tx.QueryRow(query).Scan(&response.TotalItems, &response.TotalCategories, &response.TotalPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -157,15 +156,31 @@ func handlePostPrices(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Ошибка парсинга CSV: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err := insertPriceData(prices); err != nil {
+	tx, err := db.Begin()
+    if err != nil {
+	    http.Error(w, err.Error(), http.StatusInternalServerError)
+	    return
+    }
+    defer tx.Rollback()
+	
+	if err := insertPriceData(tx, prices); err != nil {
 		http.Error(w, "Ошибка вставки в БД: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	stats, err := getStatistics()
+	
+	stats, err := getStatistics(tx)
 	if err != nil {
 		http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	
+	stats.TotalItems = len(prices)
+	
+	if err := tx.Commit(); err != nil {
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+	return
+    }
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
 }

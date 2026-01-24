@@ -111,7 +111,11 @@ func getAllPrices() ([]Price, error) {
 		prices = append(prices, price)
 	}
 
-	return prices, rows.Err()
+	if err := rows.Err(); err != nil {                                                                                                                                                              
+        return nil, err                                                                                                                                                                               
+    }                                                                                                                                                                                               
+	
+	return prices, nil  
 }
 
 func getStatistics() (*PostResponse, error) {

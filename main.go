@@ -77,13 +77,13 @@ func insertPriceData(prices []Price) error {
 		return err
 	}
 	defer tx.Rollback()
-	stmt, err := tx.Prepare("INSERT INTO prices (id, name, category, price, create_date) VALUES ($1, $2, $3, $4, $5)")
+	stmt, err := tx.Prepare("INSERT INTO prices (name, category, price, create_date) VALUES ($1, $2, $3, $4)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 	for _, price := range prices {
-		_, err := stmt.Exec(price.ID, price.Name, price.Category, price.Price, price.CreateDate)
+		_, err := stmt.Exec(price.Name, price.Category, price.Price, price.CreateDate)
 		if err != nil {
 			return err
 		}

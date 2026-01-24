@@ -6,7 +6,6 @@ DB_USER="validator"
 DB_PASSWORD="val1dat0r"    
 
 go mod download
-go mod tidy
 
 sleep 5
 
